@@ -15,7 +15,7 @@ train_args:
   federated_optimizer: "HierarchicalFL"
   client_id_list: "[]"
   client_num_in_total: 1000
-  client_num_per_round: 10
+  client_num_per_round: 20
   comm_round: 2
   epochs: 1
   batch_size: 10
