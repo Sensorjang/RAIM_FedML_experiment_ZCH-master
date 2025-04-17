@@ -469,6 +469,7 @@ def load_synthetic_data(args):
                     test_data_local_dict,
                     class_num,
                 ) = efficient_load_partition_data_cifar10(
+                    args,
                     args.dataset,
                     args.data_cache_dir,
                     args.partition_method,

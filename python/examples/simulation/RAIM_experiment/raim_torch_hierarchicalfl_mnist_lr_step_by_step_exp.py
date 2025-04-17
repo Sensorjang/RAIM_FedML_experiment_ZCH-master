@@ -207,7 +207,7 @@ def calculate_es_utilities(reputations, commun_costs):
     
     for j in sorted_edge_indices:
         sumvalue = sum((participation_ratios_rs[i][j] * datasize[i] * reputations[i]) for i in clusters[j])
-        print("########DEBUG_INFO###### A:{} B:{} C:{}".format((math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)), es_rewards[j] / (theta[j]+ 1e-6), commun_costs[j] * len(clusters[j])))
+        # print("########DEBUG_INFO###### A:{} B:{} C:{}".format((math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)), es_rewards[j] / (theta[j]+ 1e-6), commun_costs[j] * len(clusters[j])))
         es_utilities[j] = (math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)) - es_rewards[j] / (theta[j]+ 1e-6) - commun_costs[j] * len(clusters[j])
 
     print("ES效用:" , es_utilities)
@@ -233,7 +233,7 @@ def calculate_cs_utilities(finalprice):
     for j in sorted_edge_indices:
         total_datasize += sum(datasize[i] for i in clusters[j])
     cs_utilities = gama * math.log(total_datasize + 1) - finalprice * total_datasize * 1e-5
-    print("########DEBUG_INFO###### A:{} B:{} C:{}".format(gama * math.log(total_datasize + 1), finalprice * total_datasize, cs_utilities))
+    # print("########DEBUG_INFO###### A:{} B:{} C:{}".format(gama * math.log(total_datasize + 1), finalprice * total_datasize, cs_utilities))
     
     print("CS效用:" , cs_utilities)
     return cs_utilities
