@@ -2,14 +2,19 @@ common_args:
   training_type: "simulation"
   random_seed: 0
 
+#  [Dataset + Model] :
+#  mnist  lr
+#  femnist  cnn
+#  cifar10  cnn_web
+
 data_args:
-  dataset: "mnist"
+  dataset: "femnist"
   data_cache_dir: ~/fedml_data
   partition_method: "hetero"
   partition_alpha: 0.5
 
 model_args:
-  model: "lr"
+  model: "cnn"
 
 train_args:
   federated_optimizer: "HierarchicalFL"
@@ -24,7 +29,7 @@ train_args:
   weight_decay: 0.001
   # group_method: "random"
   group_method: "custom"
-  custom_group_str: "{2: [993, 298], 0: [859], 1: [553, 231, 706], 4: [672], 3: [971, 27, 306]}"
+  custom_group_str: "{2: [993, 298], 0: [859], 1: [553, 231, 706], 4: [672], 3: [971, 27, 306]}" # An example
   group_num: 10
   group_comm_round: 2
   lr: 0.001

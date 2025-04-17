@@ -1,6 +1,6 @@
 import logging
 import os
-
+import math
 import h5py
 import numpy as np
 import torch
@@ -131,7 +131,7 @@ def load_partition_data_distributed_federated_emnist(
 
 
 def load_partition_data_federated_emnist(
-    dataset, data_dir, batch_size=DEFAULT_BATCH_SIZE
+    args, dataset, data_dir, batch_size=DEFAULT_BATCH_SIZE
 ):
 
     # client ids
@@ -154,7 +154,23 @@ def load_partition_data_federated_emnist(
             dataset, data_dir, batch_size, batch_size, client_idx
         )
         local_data_num = len(train_data_local) + len(test_data_local)
-        data_local_num_dict[client_idx] = local_data_num
+
+        ############RAIM############
+        # 获取当前客户端的声誉值
+        if client_idx < len(args.reputations):
+            client_reputation = args.reputations[client_idx]
+        else:
+            client_reputation = -0.5  # 默认声誉值
+        # 根据声誉值计算折扣因子
+        if client_reputation < 0:
+            discount_factor = 0.5 + (1 + client_reputation) * 0.5  # 当声誉为负时，折扣从 0.5 到 1.0
+        else:
+            discount_factor = 1.0  # 当声誉为非负时，折扣为 1.0（即不打折）
+        # 应用折扣并四舍五入为整数
+        discounted_train_data_num = math.ceil(local_data_num * discount_factor)
+        ############RAIM############
+
+        data_local_num_dict[client_idx] = discounted_train_data_num
         # logging.info("client_idx = %d, local_sample_number = %d" % (client_idx, local_data_num))
         # logging.info("client_idx = %d, batch_num_train_local = %d, batch_num_test_local = %d" % (
         #     client_idx, len(train_data_local), len(test_data_local)))

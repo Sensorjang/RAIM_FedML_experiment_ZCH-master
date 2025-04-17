@@ -296,7 +296,7 @@ def load_synthetic_data(args):
             train_data_local_dict,
             test_data_local_dict,
             class_num,
-        ) = load_partition_data_federated_emnist(args.dataset, args.data_cache_dir)
+        ) = load_partition_data_federated_emnist(args, args.dataset, args.data_cache_dir, 20)
         args.client_num_in_total = client_num
 
     elif dataset_name == "shakespeare":
