@@ -2,9 +2,11 @@ import fedml
 import random
 import math
 import numpy as np
+from scipy.optimize import minimize
 from fedml import FedMLRunner
+from scipy.sparse import csr_matrix
 
-total_quotation = 0
+firstprice = 0
 M = 0
 N = 0
 clusters = []
@@ -13,8 +15,11 @@ sorted_edge_indices = []
 sorted_device_indices = []
 theta = []
 delta = []
+gama = 1.0
 es_rewards = []
-param_a = 2.0
+param_a = 2.3
+es_utilities = []
+participation_ratios_rs = []
 
 def calculate_utilities(initial_rewards, training_costs, reputations):
     """
@@ -123,19 +128,13 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
 
             # 计算效用矩阵
             ed_utilities = calculate_utilities(initial_rewards, training_costs, reputations)
-            
-            # 计算当前聚类的总效用（公式38）此处是占位代码
-            cluster_utilities = [ed_utilities[device][j] for device in clusters[sorted_edge_indices[j]]]
-            total_utility = sum(cluster_utilities)
 
             self_utility = ed_utilities[device_idx][sorted_edge_indices[j]]
 
             # 移除设备
             clusters[sorted_edge_indices[j]].pop()
 
-            
-
-            print("将设备 {} 分配到聚类 {} 后个体效用为 {}".format(device_idx, sorted_edge_indices[j], self_utility))
+            # print("将设备 {} 分配到聚类 {} 后个体效用为 {}".format(device_idx, sorted_edge_indices[j], self_utility))
             
             # 更新个体最大效用
             # print("self_utility:{} max_utility:{}".format(self_utility, max_utility))
@@ -154,19 +153,22 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
             print("设备 {} 放弃加入聚类".format(device_idx))
 
     # print("个体效用:" , ed_utilities)
+    eds_total_utility = 0
+    for i in range(N):
+        eds_total_utility += ed_utilities[i][sorted_edge_indices[assigned_servers[i]]]
     
     # 步骤15-19: 计算每个设备的比率Aij
     participation_ratios = calculate_participation_ratios(initial_rewards, clusters, training_costs, reputations)
     
-    return assigned_servers, participation_ratios
+    return assigned_servers, participation_ratios, eds_total_utility
 
 
-def generate_random_rewards(total_quotation, M, fluctuate):
+def generate_random_rewards(firstprice, M, fluctuate):
     """
-    生成随机的初始奖励集合，总和为 total_quotation
+    生成随机的初始奖励集合，在 firstprice 周围波动
     """
-    # 计算平均奖励值
-    average_reward = total_quotation / M
+    # 中间奖励值
+    average_reward = firstprice
 
     # 生成随机波动的奖励值
     rewards = [random.uniform(average_reward * (1 - fluctuate), average_reward * (1 + fluctuate)) for _ in range(M)]
@@ -175,65 +177,136 @@ def generate_random_rewards(total_quotation, M, fluctuate):
     sum_rewards = sum(rewards)
 
     # 计算总和与 target_quotation 的差值
-    difference = total_quotation - sum_rewards
+    difference = firstprice - sum_rewards
 
     # 将差值平均分配到每个奖励值上
     adjusted_rewards = [reward + (difference / M) for reward in rewards]
 
     return adjusted_rewards
 
-def calculate_es_rewards(total_quotation, training_costs, reputations):
+def calculate_es_rewards(firstprice, training_costs, reputations):
     """
     计算最优的ES的奖励
     """
-    global sorted_edge_indices , delta , theta, es_rewards, clusters,param_a
+    global sorted_edge_indices , delta , theta, es_rewards, clusters, param_a
 
     for j in sorted_edge_indices:
         sumvalue = sum(training_costs[i] / ( reputations[i] + 1e-6 ) for i in clusters[j])
         b = ( len(clusters[j]) - 1 ) / (sumvalue + 1e-6)
-        es_rewards[j] = (theta[j] / math.log(param_a)) - (delta[j] / total_quotation * b)
+        es_rewards[j] = (theta[j] / math.log(param_a)) - (delta[j] / firstprice * b)
 
     print("ES最优奖励:" , es_rewards)
+
+def calculate_es_utilities(reputations, commun_costs):
+    """
+    计算ES的效用
+    """
+    global clusters, M, N, sorted_edge_indices, es_utilities, param_a, firstprice, participation_ratios_rs ,datasize ,es_rewards, delta , theta
+
+    es_utilities = [0] * M # 初始化ES效用矩阵
+    
+    for j in sorted_edge_indices:
+        sumvalue = sum((participation_ratios_rs[i][j] * datasize[i] * reputations[i]) for i in clusters[j])
+        print("########DEBUG_INFO###### A:{} B:{} C:{}".format((math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)), es_rewards[j] / (theta[j]+ 1e-6), commun_costs[j] * len(clusters[j])))
+        es_utilities[j] = (math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)) - es_rewards[j] / (theta[j]+ 1e-6) - commun_costs[j] * len(clusters[j])
+
+    print("ES效用:" , es_utilities)
+
+def calculate_cs_price(training_costs, reputations):
+    """
+    计算CS的最优报价
+    """
+    global delta, gama, param_a, sorted_edge_indices, theta, clusters
+
+    sumdelta = sum(delta)
+    sumthetab = sum((theta[j] * ( len(clusters[j]) - 1 ) / ((sum( (training_costs[i] / (reputations[i] + 1e-6)) for i in clusters[j])) + 1e-6)) for j in sorted_edge_indices)
+    price = (sumdelta + math.sqrt(sumdelta ** 2 + 4 * gama * sumdelta + 4 * gama * math.log(param_a) * sumdelta / sumthetab)) / ((2 * sumthetab / math.log(param_a)) + 2)
+
+    print("CS最优报价:" , price)
+    return price
+def calculate_cs_utilities(finalprice):
+    """
+    计算CS效用
+    """
+    global gama
+    total_datasize = 0
+    for j in sorted_edge_indices:
+        total_datasize += sum(datasize[i] for i in clusters[j])
+    cs_utilities = gama * math.log(total_datasize + 1) - finalprice * total_datasize * 1e-5
+    print("########DEBUG_INFO###### A:{} B:{} C:{}".format(gama * math.log(total_datasize + 1), finalprice * total_datasize, cs_utilities))
+    
+    print("CS效用:" , cs_utilities)
+    return cs_utilities
+
+def convert_to_str(cluster, sorted_edge_indices):
+    # 构建字典
+    custom_group_dict = {}
+    for edge_idx, cluster in zip(sorted_edge_indices, clusters):
+        custom_group_dict[edge_idx] = cluster # 包括空的聚类
+
+    # 转换为字符串
+    custom_group_str = "{"
+    for edge_idx, cluster in custom_group_dict.items():
+        custom_group_str += f"{edge_idx}: {cluster}, "
+    custom_group_str = custom_group_str.rstrip(", ") + "}"
+
+    print("custom_group_str:", custom_group_str)
+    return custom_group_str
 
 if __name__ == "__main__":
     # init FedML framework
     args = fedml.init()
 
-    ############RAIM############
-    total_quotation = 1000 #总报价
     M = args.group_num # ES 边缘服务器数边
-    N = args.client_num_per_round # ED 缘设备数
-
-    es_rewards = generate_random_rewards(total_quotation, M , 0.05) # ES 初始奖励集合
-    training_costs = [random.uniform(0, 10) for _ in range(N)]
+    N = args.client_num_per_round # ED 缘设备数 
     reputations = [random.uniform(-1, 1) for _ in range(N)]
-    datasize = [random.randint(0, 10000) for _ in range(N)] # ED 训练数据集大小
-    print("初始奖励:" , es_rewards)
-    print("终端设备训练成本:" , training_costs)
-    print("终端设备声誉值:" , reputations)
-    print("终端设备数据集大小:" , datasize)
-
-    assigned_servers_rs, participation_ratios_rs = assign_edge_servers(es_rewards, training_costs, reputations)
-    print("终端设备分配:" , assigned_servers_rs)
-    print("终端设备参与比率:" , participation_ratios_rs)
-
-    theta = [10] * M #风险厌恶系数
-    delta = [0.9] * M #奖励缩放系数
-
-    calculate_es_rewards(total_quotation, training_costs, reputations)
-
-    exit()
+    args.reputations = reputations # 声誉值写入参数中
 
     # init device
     device = fedml.device.get_device(args)
 
     # load data
-    dataset, output_dim = fedml.data.load(args)
+    dataset, output_dim, train_data_local_num_dict = fedml.data.load(args)
+    print("数据量分布：{}".format(train_data_local_num_dict))
 
+    ############RAIM############
+    firstprice = 2 #初始报价
+    es_rewards = generate_random_rewards(firstprice, M , 0.00005) # ES 初始奖励集合
+    training_costs = [random.uniform(0, 1) for _ in range(N)]
+    # datasize = [random.randint(0, 10000) for _ in range(N)] # ED 训练数据集大小
+    datasize = [train_data_local_num_dict[i] for i in range(N)]
+    commun_costs = [random.uniform(0, 0.001) for _ in range(M)] # ES 单位协调和计算成本
+    print("初始奖励:{}".format(es_rewards))
+    print("终端设备训练成本:{}".format(training_costs))
+    print("终端设备声誉值:{}".format(reputations))
+    print("终端设备数据集大小:{}".format(datasize))
+
+    assigned_servers_rs, participation_ratios_rs, eds_total_utility = assign_edge_servers(es_rewards, training_costs, reputations)
+    print("终端设备分配:{}".format(assigned_servers_rs))
+    print("终端设备参与比率:{}".format(csr_matrix(participation_ratios_rs)))
+
+    theta = [0.9] * M #风险厌恶系数
+    delta = [2.5] * M #奖励缩放系数
+
+    calculate_es_rewards(firstprice, training_costs, reputations)
+
+    calculate_es_utilities(reputations, commun_costs)
+
+    finalprice = calculate_cs_price(training_costs, reputations)
+
+    cs_utilities = calculate_cs_utilities(finalprice)
+
+    social_utility = cs_utilities + sum(es_utilities) + eds_total_utility
+    print("社会效用:{}".format(social_utility))
+
+    # 按照计算出的终端设备分配方式分组
+    args.group_method = "custom" # raim强制使用自定义分组
+    args.custom_group_str = convert_to_str(clusters, sorted_edge_indices)
+    ############RAIM############
+    
     # load model
     model = fedml.model.create(args, output_dim)
 
     # start training
     fedml_runner = FedMLRunner(args, device, dataset, model)
     fedml_runner.run()
-

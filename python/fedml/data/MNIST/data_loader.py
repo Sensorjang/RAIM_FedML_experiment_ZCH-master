@@ -1,6 +1,6 @@
 import json
 import os
-
+import math
 import numpy as np
 import wget
 from ...ml.engine import ml_engine_adapter
@@ -116,7 +116,7 @@ def load_partition_data_mnist(
     test_data_num = 0
     train_data_local_dict = dict()
     test_data_local_dict = dict()
-    train_data_local_num_dict = dict()
+    train_data_local_num_dict = dict() 
     train_data_global = list()
     test_data_global = list()
     client_idx = 0
@@ -124,9 +124,25 @@ def load_partition_data_mnist(
     for u, g in zip(users, groups):
         user_train_data_num = len(train_data[u]["x"])
         user_test_data_num = len(test_data[u]["x"])
+
+        ############RAIM############
+        # 获取当前客户端的声誉值
+        if client_idx < len(args.reputations):
+            client_reputation = args.reputations[client_idx]
+        else:
+            client_reputation = -0.5  # 默认声誉值
+        # 根据声誉值计算折扣因子
+        if client_reputation < 0:
+            discount_factor = 0.5 + (1 + client_reputation) * 0.5  # 当声誉为负时，折扣从 0.5 到 1.0
+        else:
+            discount_factor = 1.0  # 当声誉为非负时，折扣为 1.0（即不打折）
+        # 应用折扣并四舍五入为整数
+        discounted_train_data_num = math.ceil(user_train_data_num * discount_factor)
+        ############RAIM############
+
         train_data_num += user_train_data_num
         test_data_num += user_test_data_num
-        train_data_local_num_dict[client_idx] = user_train_data_num
+        train_data_local_num_dict[client_idx] = discounted_train_data_num
 
         # transform to batches
         train_batch = batch_data(args, train_data[u], batch_size)

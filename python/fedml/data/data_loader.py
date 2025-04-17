@@ -576,7 +576,7 @@ def load_synthetic_data(args):
         class_num,
     ]
 
-    return dataset, class_num
+    return dataset, class_num, train_data_local_num_dict
 
 
 def load_poisoned_dataset_from_edge_case_examples(args):
