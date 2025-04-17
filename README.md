@@ -8,6 +8,7 @@ RAIM_FedML_experiment_ZCH
 </div>
 
 ## 项目维护与代码编辑
+- 左翠华Cuihua Zuo / 
 - 祁盼Pan Qi / Sensorjang@foxmail.com
 
 ## 基于FedML框架搭建的RAIM算法验证实验
