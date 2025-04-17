@@ -41,7 +41,8 @@ pip install .
 然后执行[RAIM_experiment](python/examples/simulation/RAIM_experiment)下的各个python文件即可：<br/>
 Then execute the various Python files under [RAIM_experiment](python/examples/simulation/RAIM_experiment) to:<br/>
 ```bash
-python torch_RAIM_step_by_step_example.py --yaml [xxx.yaml]
+python raim_torch_hierarchicalfl_mnist_lr_step_by_step_exp.py --cf selected.yaml
+python raim_rs_torch_hierarchicalfl_mnist_lr_step_by_step_exp.py --cf selected.yaml
 ```
 程序会自动绘制图像，并且在控制台输出绘图坐标信息<br/>
 The program will automatically draw images and output drawing coordinate information on the console<br/>
