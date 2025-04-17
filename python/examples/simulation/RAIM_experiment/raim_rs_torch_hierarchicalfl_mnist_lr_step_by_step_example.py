@@ -92,67 +92,31 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
     
     # 步骤3: 初始化聚类
     clusters = [[] for _ in range(M)]
-    clusters[sorted_edge_indices[0]].append(sorted_device_indices[0])  # 第一个设备分配给第一个边缘服务器
-
-    # 步骤4-14: 为剩余设备分配边缘服务器
+    
+    # 随机分配逻辑
     assigned_servers = [0] * N  # 初始化分配结果
     
-    for i in range(1, N): # 1 ~ N-1 原文2->N
+    for i in range(N):
         device_idx = sorted_device_indices[i]
-
-        k = -1
-        print("clusters:{}".format(clusters))#debug
-        # 步骤5-6: 确定k的值, k是argmax_k∈[1,M] {clusters[k]!=empty}
-        for k_try in range(M , 0, -1):
-            # print("尝试聚类{}".format(sorted_edge_indices[k_try - 1]))
-            if clusters[sorted_edge_indices[k_try - 1]] != []:
-                # print("聚类{}不为空".format(sorted_edge_indices[k_try - 1]))
-                # 找到第一个非空的子列表，记录索引 k
-                k = k_try
-                break
-                    
-        if k == M :
-            k = M - 1
-        # print("K={}".format(k))
         
-        max_utility = -float('inf')
-        best_cluster = -1
+        # 随机选择一个边缘服务器
+        available_edges = [edge_idx for edge_idx in sorted_edge_indices]
         
-        # 步骤7-11: 尝试将设备加入每个可能的聚类
-        for j in range(k + 1): # 0 ~ k 原文1->k+1
+        if not available_edges:
+            # 如果所有聚类都为空，随机选择一个边缘服务器
+            available_edges = sorted_edge_indices
             
-            # 临时将设备加入聚类
-            clusters[sorted_edge_indices[j]].append(device_idx)
-
-            # print("当前尝试的clusters分配情况：", clusters)
-
-            # 计算效用矩阵
-            ed_utilities = calculate_utilities(initial_rewards, training_costs, reputations)
-
-            self_utility = ed_utilities[device_idx][sorted_edge_indices[j]]
-
-            # 移除设备
-            clusters[sorted_edge_indices[j]].pop()
-
-            # print("将设备 {} 分配到聚类 {} 后个体效用为 {}".format(device_idx, sorted_edge_indices[j], self_utility))
-            
-            # 更新个体最大效用
-            # print("self_utility:{} max_utility:{}".format(self_utility, max_utility))
-            if self_utility < 0 :
-                continue
-            if self_utility > max_utility:
-                max_utility = self_utility
-                best_cluster = sorted_edge_indices[j]
-
-        # 步骤13: 分配设备到最优聚类
-        if best_cluster != -1:
-            clusters[best_cluster].append(device_idx)
-            assigned_servers[device_idx] = best_cluster
-            print("将设备 {} 分配到聚类 {}".format(device_idx, best_cluster))
-        else:
-            print("设备 {} 放弃加入聚类".format(device_idx))
-
-    # print("个体效用:" , ed_utilities)
+        selected_edge = random.choice(available_edges)
+        
+        # 分配设备到随机选择的边缘服务器
+        clusters[selected_edge].append(device_idx)
+        assigned_servers[device_idx] = selected_edge
+        print("将设备 {} 随机分配到边缘服务器 {}".format(device_idx, selected_edge))
+    
+    # 计算效用矩阵
+    ed_utilities = calculate_utilities(initial_rewards, training_costs, reputations)
+    
+    # 计算每个设备的总效用
     eds_total_utility = 0
     for i in range(N):
         eds_total_utility += ed_utilities[i][sorted_edge_indices[assigned_servers[i]]]
@@ -299,8 +263,9 @@ if __name__ == "__main__":
     social_utility = cs_utilities + sum(es_utilities) + eds_total_utility
     print("社会效用:{}".format(social_utility))
 
-    # 随机分组 忽略分配结果
-    args.group_method = "random" #raim_rs强制使用随机分组
+    # 按照计算出的终端设备分配方式分组
+    args.group_method = "custom" # raim强制使用自定义分组
+    args.custom_group_str = convert_to_str(clusters, sorted_edge_indices)
     ############RAIM############
     
     # load model
