@@ -217,13 +217,40 @@ def convert_to_str(cluster, sorted_edge_indices):
     print("custom_group_str:", custom_group_str)
     return custom_group_str
 
-if __name__ == "__main__":
+def generate_reputations(N, lowrepu_ratio):
+    # 计算低声誉的数量
+    low_repu_count = int(N * lowrepu_ratio)
+    high_repu_count = N - low_repu_count
+
+    # 生成低声誉的值
+    low_reputations = [random.uniform(-1, 0) for _ in range(low_repu_count)]
+    # 生成高声誉的值
+    high_reputations = [random.uniform(0, 1) for _ in range(high_repu_count)]
+
+    # 合并低声誉和高声誉的值
+    reputations = low_reputations + high_reputations
+
+    # 打乱顺序
+    random.shuffle(reputations)
+
+    return reputations
+def raim_rs(justsimulate, esnum = 0, ednum = 0, lowrepu_ratio = 0.0):
+    global firstprice, M, N, clusters, datasize, sorted_edge_indices, sorted_device_indices, theta, delta, gama, es_rewards, param_a, es_utilities, participation_ratios_rs
+
     # init FedML framework
     args = fedml.init()
 
-    M = args.group_num # ES 边缘服务器数边
-    N = args.client_num_per_round # ED 缘设备数
-    reputations = [random.uniform(-1, 1) for _ in range(N)]
+    if esnum != 0:
+        M = esnum
+    else:
+        M = args.group_num # ES 边缘服务器数边
+
+    if ednum != 0:
+        N = ednum
+    else:
+        N = args.client_num_per_round # ED 缘设备数
+    
+    reputations = generate_reputations(N, lowrepu_ratio)
     args.reputations = reputations # 声誉值写入参数中
 
     # init device
@@ -266,6 +293,9 @@ if __name__ == "__main__":
     # 按照计算出的终端设备分配方式分组
     args.group_method = "custom" # raim强制使用自定义分组
     args.custom_group_str = convert_to_str(clusters, sorted_edge_indices)
+
+    if justsimulate:
+        return social_utility, cs_utilities
     ############RAIM############
     
     # load model
@@ -274,3 +304,6 @@ if __name__ == "__main__":
     # start training
     fedml_runner = FedMLRunner(args, device, dataset, model)
     fedml_runner.run()
+
+if __name__ == "__main__":
+    raim_rs(False)
