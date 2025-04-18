@@ -80,7 +80,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(2, 2, figsize=(15, 10))  # 2行2列的子图布局
 
     # 第一个子图：随着ednum的增加，su的值
-    bar_width = 3  # 柱状图的宽度
+    bar_width = 2  # 柱状图的宽度
     index = ednums  # 横坐标位置
     index_raim = [i - bar_width / 2 for i in index]  # RAIM的柱状图位置
     index_raimrs = [i + bar_width / 2 for i in index]  # RAIM-RS的柱状图位置
@@ -94,6 +94,7 @@ if __name__ == '__main__':
     axs[0, 0].grid(True)
 
     # 第二个子图：随着esnum的增加，su的值
+    bar_width = 2  # 柱状图的宽度
     index = esnums  # 横坐标位置
     index_raim = [i - bar_width / 2 for i in index]  # RAIM的柱状图位置
     index_raimrs = [i + bar_width / 2 for i in index]  # RAIM-RS的柱状图位置
@@ -107,7 +108,7 @@ if __name__ == '__main__':
     axs[0, 1].grid(True)
 
     # 第三个子图：随着ednum的增加，cu的值
-    bar_width = 1.5  # 柱状图的宽度
+    bar_width = 2  # 柱状图的宽度
     index = ednums  # 横坐标位置
     index_raim = [i - bar_width / 2 for i in index]  # RAIM的柱状图位置
     index_raimrs = [i + bar_width / 2 for i in index]  # RAIM-RS的柱状图位置
@@ -121,6 +122,7 @@ if __name__ == '__main__':
     axs[1, 0].grid(True)
 
     # 第四个子图：随着esnum的增加，cu的值
+    bar_width = 2  # 柱状图的宽度
     index = esnums  # 横坐标位置
     index_raim = [i - bar_width / 2 for i in index]  # RAIM的柱状图位置
     index_raimrs = [i + bar_width / 2 for i in index]  # RAIM-RS的柱状图位置
