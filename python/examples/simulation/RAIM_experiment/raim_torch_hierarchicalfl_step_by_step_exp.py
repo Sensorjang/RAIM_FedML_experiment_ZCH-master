@@ -148,14 +148,19 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
         if best_cluster != -1:
             clusters[best_cluster].append(device_idx)
             assigned_servers[device_idx] = best_cluster
-            print("将设备 {} 分配到聚类 {}".format(device_idx, best_cluster))
+            print("将设备 {} 分配到聚类 {};".format(device_idx, best_cluster), end='')
         else:
-            print("设备 {} 放弃加入聚类".format(device_idx))
+            print("设备 {} 放弃加入聚类;".format(device_idx), end='')
 
     # print("个体效用:" , ed_utilities)
     eds_total_utility = 0
     for i in range(N):
-        eds_total_utility += ed_utilities[i][sorted_edge_indices[assigned_servers[i]]]
+        value = ed_utilities[i][sorted_edge_indices[assigned_servers[i]]]
+        if value < -5: # 效用限制
+            value = -5
+        elif value > 5:
+            value = 5
+        eds_total_utility += value
     
     # 步骤15-19: 计算每个设备的比率Aij
     participation_ratios = calculate_participation_ratios(initial_rewards, clusters, training_costs, reputations)
@@ -323,6 +328,8 @@ def raim(justsimulate, esnum = 0, ednum = 0, lowrepu_ratio = 0.0):
 
     cs_utilities = calculate_cs_utilities(finalprice)
 
+    es_utilities = [max(min(i, 10), -10) for i in es_utilities] # 效用限制
+    cs_utilities = max(min(cs_utilities, 20), -20)
     social_utility = cs_utilities + sum(es_utilities) + eds_total_utility
     print("社会效用:{}".format(social_utility))
 

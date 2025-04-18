@@ -111,7 +111,7 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
         # 分配设备到随机选择的边缘服务器
         clusters[selected_edge].append(device_idx)
         assigned_servers[device_idx] = selected_edge
-        print("将设备 {} 随机分配到边缘服务器 {}".format(device_idx, selected_edge))
+        print("将设备 {} 随机分配到边缘服务器 {};".format(device_idx, selected_edge), end='')
     
     # 计算效用矩阵
     ed_utilities = calculate_utilities(initial_rewards, training_costs, reputations)
@@ -119,7 +119,12 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
     # 计算每个设备的总效用
     eds_total_utility = 0
     for i in range(N):
-        eds_total_utility += ed_utilities[i][sorted_edge_indices[assigned_servers[i]]]
+        value = ed_utilities[i][sorted_edge_indices[assigned_servers[i]]]
+        if value < -5: # 效用限制
+            value = -5
+        elif value > 5:
+            value = 5
+        eds_total_utility += value
     
     # 步骤15-19: 计算每个设备的比率Aij
     participation_ratios = calculate_participation_ratios(initial_rewards, clusters, training_costs, reputations)
@@ -287,6 +292,8 @@ def raim_rs(justsimulate, esnum = 0, ednum = 0, lowrepu_ratio = 0.0):
 
     cs_utilities = calculate_cs_utilities(finalprice)
 
+    es_utilities = [max(min(i, 10), -10) for i in es_utilities] # 效用限制
+    cs_utilities = max(min(cs_utilities, 100), -100)
     social_utility = cs_utilities + sum(es_utilities) + eds_total_utility
     print("社会效用:{}".format(social_utility))
 
