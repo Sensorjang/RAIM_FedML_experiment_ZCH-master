@@ -23,6 +23,12 @@ This experiment modified some algorithm logic and links of the [FedML framework]
 - Algorithms involved: RAIM (ours), QAIM, MaxQ
 - Datasets involved: MNIST, FEMNIST, CIFAR10, SVHN
 - Models involved: CNN
+<br/><br/>
+- Datasets Download URL:<br/>
+  - MNIST: https://fedcv.s3.us-west-1.amazonaws.com/MNIST.zip
+  - FEMNIST: https://fedml.s3-us-west-1.amazonaws.com/fed_emnist.tar.bz2
+  - CIFAR10: https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
+  - SVHN: http://ufldl.stanford.edu/housenumbers/train_32x32.mat and http://ufldl.stanford.edu/housenumbers/test_32x32.mat
 
 ## 主要路径
 - 实验运行路径：[RAIM_experiment](python/examples/simulation/RAIM_experiment)
@@ -42,8 +48,11 @@ pip install .
 然后执行[RAIM_experiment](python/examples/simulation/RAIM_experiment)下的各个python文件即可：<br/>
 Then execute the various Python files under [RAIM_experiment](python/examples/simulation/RAIM_experiment) to:<br/>
 ```bash
-python raim_torch_hierarchicalfl_mnist_lr_step_by_step_exp.py --cf selected.yaml
-python raim_rs_torch_hierarchicalfl_mnist_lr_step_by_step_exp.py --cf selected.yaml
+examples:
+python raim_torch_hierarchicalfl_step_by_step_exp.py --cf selected_svhn.yaml
+python raim_rs_torch_hierarchicalfl_step_by_step_exp.py --cf selected_svhn.yaml
+python exp1.py --cf selected_svhn.yaml
+python workspace.py --cf selected_svhn.yaml
 ```
 程序会自动绘制图像，并且在控制台输出绘图坐标信息<br/>
 The program will automatically draw images and output drawing coordinate information on the console<br/>
