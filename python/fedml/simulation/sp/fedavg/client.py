@@ -28,6 +28,13 @@ class Client:
         return weights
 
     def local_test(self, b_use_test_dataset):
+        for x, labels in self.local_training_data:
+                x, labels = x.to(self.device), labels.to(self.device)
+                
+                if self.args.dataset == "svhn":
+                    # 将标签从 [1, 10] 调整为 [0, 9]
+                    labels = labels - 1
+                    
         if b_use_test_dataset:
             test_data = self.local_test_data
         else:

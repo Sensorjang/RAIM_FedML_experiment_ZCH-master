@@ -1,6 +1,6 @@
 import logging
 import torch.nn as nn
-from fedml.model.cv.cnn import CNN_DropOut, CNN_WEB
+from fedml.model.cv.cnn import CNN_DropOut, CNN_WEB, CNN_SVHN
 from fedml.model.cv.darts import genotypes
 from fedml.model.cv.darts.model import NetworkCIFAR
 from fedml.model.cv.darts.model_search import Network
@@ -23,6 +23,9 @@ def create(args, output_dim):
     if model_name == "lr" and args.dataset == "mnist":
         logging.info("LogisticRegression + MNIST")
         model = LogisticRegression(28 * 28, output_dim)
+    elif model_name == "cnn" and args.dataset == "svhn":
+        logging.info("CNN + SVHN")
+        model = CNN_SVHN()
     elif model_name == "cnn_web" and args.dataset == "cifar10":
         logging.info("CNN_WEB + CIFAR10")
         model = CNN_WEB()

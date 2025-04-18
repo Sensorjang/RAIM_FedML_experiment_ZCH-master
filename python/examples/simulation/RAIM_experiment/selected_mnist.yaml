@@ -6,6 +6,7 @@ common_args:
 #  mnist  lr
 #  femnist  cnn
 #  cifar10  cnn_web
+#  svhn  cnn
 
 data_args:
   dataset: "mnist"

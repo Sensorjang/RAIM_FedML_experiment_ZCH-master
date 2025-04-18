@@ -18,6 +18,7 @@ from .cinic10.data_loader import load_partition_data_cinic10
 from .edge_case_examples.data_loader import load_poisoned_dataset
 from .fed_cifar100.data_loader import load_partition_data_federated_cifar100
 from .fed_shakespeare.data_loader import load_partition_data_federated_shakespeare
+from .SVHN.data_loader import load_partition_data_svhn
 from .file_operation import *
 from .shakespeare.data_loader import load_partition_data_shakespeare
 from .stackoverflow_nwp.data_loader import load_partition_data_federated_stackoverflow_nwp
@@ -282,6 +283,26 @@ def load_synthetic_data(args):
         For shallow NN or linear models, 
         we uniformly sample a fraction of clients each round (as the original FedAvg paper)
         """
+        args.client_num_in_total = client_num
+    
+    elif dataset_name == "svhn":
+        logging.info("load_data. dataset_name = %s" % dataset_name)
+        (
+            client_num,
+            train_data_num,
+            test_data_num,
+            train_data_global,
+            test_data_global,
+            train_data_local_num_dict,
+            train_data_local_dict,
+            test_data_local_dict,
+            class_num,
+        ) = load_partition_data_svhn(
+            args,
+            args.batch_size,
+            train_path=os.path.join(args.data_cache_dir, "SVHN", "train"),
+            test_path=os.path.join(args.data_cache_dir, "SVHN", "test"),
+        )
         args.client_num_in_total = client_num
 
     elif dataset_name == "femnist":

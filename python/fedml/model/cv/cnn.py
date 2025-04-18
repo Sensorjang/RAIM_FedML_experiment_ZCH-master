@@ -141,7 +141,56 @@ class CNN_DropOut(torch.nn.Module):
         # x = self.softmax(self.linear_2(x))
         return x
 
+class CNN_SVHN(nn.Module):
+    """
+    A CNN model for the SVHN dataset.
+    The input shape is [batch_size, 3, 32, 32] and the output shape is [batch_size, 10].
+    """
+    def __init__(self):
+        super(CNN_SVHN, self).__init__()
+        # First convolutional layer
+        self.conv2d_1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)  # Input channels = 3 (RGB), output channels = 32
+        self.conv2d_2 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
+        self.max_pooling_1 = nn.MaxPool2d(2, stride=2)  # Pooling layer to reduce spatial dimensions
 
+        # Second convolutional layer
+        self.conv2d_3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)  # Input channels = 32, output channels = 64
+        self.conv2d_4 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
+        self.max_pooling_2 = nn.MaxPool2d(2, stride=2)  # Pooling layer to reduce spatial dimensions
+
+        # Fully connected layers
+        self.flatten = nn.Flatten()
+        self.linear_1 = nn.Linear(64 * 8 * 8, 512)  # Input size after pooling: 64 * 8 * 8
+        self.dropout = nn.Dropout(0.5)
+        self.linear_2 = nn.Linear(512, 10)  # Output layer with 10 classes
+
+        # Activation function
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        # First convolutional block
+        x = self.conv2d_1(x)
+        x = self.relu(x)
+        x = self.conv2d_2(x)
+        x = self.relu(x)
+        x = self.max_pooling_1(x)
+
+        # Second convolutional block
+        x = self.conv2d_3(x)
+        x = self.relu(x)
+        x = self.conv2d_4(x)
+        x = self.relu(x)
+        x = self.max_pooling_2(x)
+
+        # Flatten and fully connected layers
+        x = self.flatten(x)
+        x = self.linear_1(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.linear_2(x)
+
+        return x
+    
 class Cifar10FLNet(nn.Module):
     def __init__(self):
         super(Cifar10FLNet, self).__init__()

@@ -152,6 +152,11 @@ class ModelTrainerCLS(ClientTrainer):
                 target = target.to(device)
                 pred = model(x)
                 target = target.long()
+
+                if self.args.dataset == "svhn":
+                    # 将标签从 [1, 10] 调整为 [0, 9]
+                    target = target - 1
+
                 loss = criterion(pred, target)  # pylint: disable=E1102
 
                 _, predicted = torch.max(pred, -1)

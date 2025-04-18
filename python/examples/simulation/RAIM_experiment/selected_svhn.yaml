@@ -9,7 +9,7 @@ common_args:
 #  svhn  cnn
 
 data_args:
-  dataset: "femnist"
+  dataset: "svhn"
   data_cache_dir: ~/fedml_data
   partition_method: "hetero"
   partition_alpha: 0.5

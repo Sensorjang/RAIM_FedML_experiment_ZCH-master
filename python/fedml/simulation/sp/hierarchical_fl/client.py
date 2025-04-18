@@ -40,7 +40,10 @@ class HFLClient(Client):
         w_list = []
         for epoch in range(self.args.epochs):
             for x, labels in self.local_training_data:
+                # 将标签从 [1, 10] 调整为 [0, 9]
+                labels = labels - 1
                 x, labels = x.to(self.device), labels.to(self.device)
+                # 打印标签
                 self.model.zero_grad()
                 log_probs = self.model(x)
                 loss = self.criterion(log_probs, labels)  # pylint: disable=E1102
