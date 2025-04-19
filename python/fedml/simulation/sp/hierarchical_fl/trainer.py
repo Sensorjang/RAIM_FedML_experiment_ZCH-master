@@ -162,8 +162,9 @@ class HierarchicalTrainer(FedAvgAPI):
                     self.model.load_state_dict(w_global)
                     test_acc, test_loss = self._local_test_on_all_clients(global_epoch)
 
-            acc_list.append(test_acc)
-            loss_list.append(test_loss)
+            if test_acc != 0:
+                acc_list.append(test_acc)
+                loss_list.append(test_loss)
 
         return acc_list, loss_list
 
