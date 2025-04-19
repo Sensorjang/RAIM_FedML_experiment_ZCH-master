@@ -50,9 +50,19 @@ Then execute the various Python files under [RAIM_experiment](python/examples/si
 ```bash
 examples:
 python exp1.py --cf selected_svhn.yaml
+
 python exp2.py --cf selected_svhn.yaml
-python exp3.py --cf selected_svhn.yaml
-python exp4.py --cf selected_svhn.yaml
+
+python exp3mnist.py --cf selected_mnist.yaml
+python exp3cifar10.py --cf selected_cifar10.yaml
+python exp3svhn.py --cf selected_svhn.yaml
+python exp3femnist.py --cf selected_femnist.yaml
+
+python exp4mnist.py --cf selected_mnist.yaml
+python exp4cifar10.py --cf selected_cifar10.yaml
+python exp4svhn.py --cf selected_svhn.yaml
+python exp4femnist.py --cf selected_femnist.yaml
+
 python raim_torch_hierarchicalfl_step_by_step_exp.py --cf selected_svhn.yaml
 python raim_rs_torch_hierarchicalfl_step_by_step_exp.py --cf selected_svhn.yaml
 ```
