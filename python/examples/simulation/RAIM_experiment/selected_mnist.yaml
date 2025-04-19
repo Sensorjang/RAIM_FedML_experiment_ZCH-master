@@ -32,7 +32,7 @@ train_args:
   group_method: "custom"
   custom_group_str: "{2: [993, 298], 0: [859], 1: [553, 231, 706], 4: [672], 3: [971, 27, 306]}" # An example
   group_num: 10
-  group_comm_round: 2
+  group_comm_round: 5
   lr: 0.001
   reputations: []
 
