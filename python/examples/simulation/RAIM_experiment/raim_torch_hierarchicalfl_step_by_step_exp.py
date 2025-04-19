@@ -162,9 +162,10 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
         value = ed_utilities[i][assigned_servers[i]]
         if value < 0.0: # 效用限制
             value = 0.0
-        elif value > 0.5:
-            value = 0.5
+        elif value > 5:
+            value = 5
         eds_total_utility += value
+    print("EDs总效用为：{}".format(eds_total_utility))
     
     # 步骤15-19: 计算每个设备的比率Aij
     participation_ratios = calculate_participation_ratios(initial_rewards, clusters, training_costs, reputations)
@@ -174,7 +175,7 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
 
 def generate_random_rewards(firstprice, M, fluctuate):
     """
-    生成随机的初始奖励集合，在 firstprice 周围波动
+    生成随机的初始奖励集合，波动
     """
     # 中间奖励值
     average_reward = firstprice
@@ -182,16 +183,16 @@ def generate_random_rewards(firstprice, M, fluctuate):
     # 生成随机波动的奖励值
     rewards = [random.uniform(average_reward * (1 - fluctuate), average_reward * (1 + fluctuate)) for _ in range(M)]
 
-    # 计算生成的奖励值总和
-    sum_rewards = sum(rewards)
+    # # 计算生成的奖励值总和
+    # sum_rewards = sum(rewards)
 
-    # 计算总和与 target_quotation 的差值
-    difference = firstprice - sum_rewards
+    # # 计算总和与 target_quotation 的差值
+    # difference = firstprice - sum_rewards
 
-    # 将差值平均分配到每个奖励值上
-    adjusted_rewards = [reward + (difference / M) for reward in rewards]
+    # # 将差值平均分配到每个奖励值上
+    # adjusted_rewards = [reward + (difference / M) for reward in rewards]
 
-    return adjusted_rewards
+    return rewards
 
 def calculate_es_rewards(firstprice, training_costs, reputations):
     """
@@ -200,9 +201,12 @@ def calculate_es_rewards(firstprice, training_costs, reputations):
     global sorted_edge_indices , delta , theta, es_rewards, clusters, param_a
 
     for j in sorted_edge_indices:
-        sumvalue = 0 + sum(training_costs[i] / ( reputations[i] + 1e-6 ) for i in clusters[j])
-        b = ( len(clusters[j]) - 1 ) / (sumvalue + 1e-6)
-        es_rewards[j] = (theta[j] / math.log(param_a)) - (delta[j] / firstprice * b)
+        if clusters[j] == []:
+            es_rewards[j] = 0
+        else:
+            sumvalue = 0 + sum(training_costs[i] / ( reputations[i] + 1e-6 ) for i in clusters[j])
+            b = ( len(clusters[j]) - 1 ) / (sumvalue + 1e-6)
+            es_rewards[j] = (theta[j] / math.log(param_a)) - (delta[j] / firstprice * b)
 
     print("ES最优奖励:" , es_rewards)
 
@@ -216,10 +220,13 @@ def calculate_es_utilities(reputations, commun_costs, finalprice):
     firstprice = finalprice
     
     for j in sorted_edge_indices:
-        sumvalue = sum(max(0, (participation_ratios_rs[i][j] * datasize[i] * reputations[i])) for i in clusters[j])
-        # print("########DEBUG_INFO###### A:{} B:{} C:{}".format((math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)), es_rewards[j] / (theta[j]+ 1e-6), commun_costs[j] * len(clusters[j])))
-        es_utilities[j] = (math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)) - es_rewards[j] / (theta[j]+ 1e-6) - commun_costs[j] * len(clusters[j])
-        es_utilities[j] = 0 if es_utilities[j] < -10e5 else es_utilities[j]
+        if clusters[j] == []:
+            es_utilities[j] = 0
+        else:
+            sumvalue = sum(max(0, (participation_ratios_rs[i][j] * datasize[i] * reputations[i])) for i in clusters[j])
+            # print("########DEBUG_INFO###### A:{} B:{} C:{}".format((math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)), es_rewards[j] / (theta[j]+ 1e-6), commun_costs[j] * len(clusters[j])))
+            es_utilities[j] = (math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)) - es_rewards[j] / (theta[j]+ 1e-6) - commun_costs[j] * len(clusters[j])
+            es_utilities[j] = 0 if es_utilities[j] < -10e5 else es_utilities[j]
 
     print("ES效用:" , es_utilities)
 
@@ -232,8 +239,7 @@ def calculate_cs_price(training_costs, reputations):
     sumdelta = sum(delta)
     sumthetab = sum((theta[j] * ( len(clusters[j]) - 1 ) / ((sum( (training_costs[i] / (reputations[i] + 1e-6)) for i in clusters[j])) + 1e-6)) for j in sorted_edge_indices if clusters[j])
     price = (sumdelta + math.sqrt(sumdelta ** 2 + 4 * gama * sumdelta + 4 * gama * math.log(param_a) * sumdelta / sumthetab)) / ((2 * sumthetab / math.log(param_a)) + 2)
-    print([( ((sum( (training_costs[i] / (reputations[i] + 1e-6)) for i in clusters[j])) + 1e-6))] for j in sorted_edge_indices if clusters[j])
-
+    
     print("CS最优报价:" , price)
     return price
 def calculate_cs_utilities(finalprice):
@@ -324,8 +330,8 @@ def raim(justsimulate, esnum = 0, ednum = 0, lowrepu_ratio = 0.0):
     print("终端设备分配:{}".format(assigned_servers_rs))
     print("终端设备参与比率:{}".format(csr_matrix(participation_ratios_rs)))
 
-    theta = [0.9] * M #风险厌恶系数
-    delta = [2.5] * M #奖励缩放系数
+    theta = [0.1] * M #风险厌恶系数
+    delta = [0.9] * M #奖励缩放系数
 
     calculate_es_rewards(firstprice, training_costs, reputations)
 
@@ -335,9 +341,10 @@ def raim(justsimulate, esnum = 0, ednum = 0, lowrepu_ratio = 0.0):
 
     cs_utilities = calculate_cs_utilities(finalprice)
 
-    es_utilities = [max(min(i, 10), -10) for i in es_utilities] # 效用限制
-    cs_utilities = max(min(cs_utilities, 20), -5)
+    es_utilities = [max(min(i, 100), -10) for i in es_utilities] # 效用限制
+    # cs_utilities = max(min(cs_utilities, 1000), -5)
     social_utility = cs_utilities + sum(es_utilities) + eds_total_utility
+    print("ES总效用:{}".format(sum(es_utilities)))
     print("社会效用:{}".format(social_utility))
 
     # 按照计算出的终端设备分配方式分组

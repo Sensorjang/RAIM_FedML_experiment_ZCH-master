@@ -113,8 +113,12 @@ class HierarchicalTrainer(FedAvgAPI):
             return group_to_client_indexes
 
     def train(self):
+        acc_list = []
+        loss_list = []
         w_global = self.model.state_dict()
         for global_round_idx in range(self.args.comm_round):
+            test_acc = 0
+            test_loss = 0
             logging.info(
                 "################Global Communication Round : {}".format(
                     global_round_idx
@@ -156,4 +160,10 @@ class HierarchicalTrainer(FedAvgAPI):
                         - 1
                 ):
                     self.model.load_state_dict(w_global)
-                    self._local_test_on_all_clients(global_epoch)
+                    test_acc, test_loss = self._local_test_on_all_clients(global_epoch)
+
+            acc_list.append(test_acc)
+            loss_list.append(test_loss)
+
+        return acc_list, loss_list
+

@@ -234,6 +234,8 @@ class FedAvgAPI(object):
         mlops.log({"Test/Loss": test_loss, "round": round_idx})
         logging.info(stats)
 
+        return test_acc, test_loss
+
     def _local_test_on_validation_set(self, round_idx):
 
         logging.info("################local_test_on_validation_set : {}".format(round_idx))

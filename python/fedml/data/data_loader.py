@@ -558,6 +558,7 @@ def load_synthetic_data(args):
             test_data_local_dict,
             class_num,
         ) = data_loader(
+            args,
             args.dataset,
             args.data_cache_dir,
             args.partition_method,

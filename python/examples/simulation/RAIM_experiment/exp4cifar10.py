@@ -27,8 +27,8 @@ if __name__ == '__main__':
     figxls = wb.create_sheet('Figure' + '_' + datasetname)
     figxls.append(['lowrepu_ratio', '[RAIM] ACC', '[RAIM-RS] ACC'])
 
-    esnum = 20
-    ednum = 70
+    esnum = 5
+    ednum = 20
 
     for lowrepu_ratio in [0.1, 0.2, 0.3, 0.4, 0.5]:
         raim_acc, raim_loss = raim(False, esnum, ednum, lowrepu_ratio)

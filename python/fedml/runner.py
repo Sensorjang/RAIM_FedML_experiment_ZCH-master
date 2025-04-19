@@ -216,6 +216,7 @@ class FedMLRunner:
         log_file_obj.close()
 
     def run(self):
-        self.runner.run()
+        acc_list, loss_list = self.runner.run()
         FedMLRunner.log_runner_result()
+        return acc_list, loss_list
 

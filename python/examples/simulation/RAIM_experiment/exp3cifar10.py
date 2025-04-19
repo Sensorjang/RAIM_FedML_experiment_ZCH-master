@@ -29,8 +29,8 @@ if __name__ == '__main__':
     figxls = wb.create_sheet('Figure' + '_' + datasetname)
     figxls.append(['round_idx', '[RAIM] ACC', '[RAIM] LOSS', '[RAIM-RS] ACC', '[RAIM-RS] LOSS'])
 
-    esnum = 20
-    ednum = 70
+    esnum = 5
+    ednum = 20
 
     raim_acc, raim_loss = raim(False, esnum, ednum, 0.0)
     print("[RAIM] raim_acc:{} raim_loss:{}".format(raim_acc, raim_loss))
