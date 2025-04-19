@@ -7,7 +7,7 @@ if __name__ == '__main__':
     esnum = 20
     ednum = 50
 
-    # raim_su, raim_cu = raim(True, esnum, ednum, 0.0)
-    raimrs_su, raimrs_cu = raim_rs(True, esnum, ednum, 0.0)
-    # print("[RAIM] sdnum:{} esnum:{} raim_su{} raim_cu{}".format(ednum, esnum, raim_su, raim_cu))
-    print("[RAIM-RS] sdnum:{} esnum:{} raimrs_su{} raimrs_cu{}".format(ednum, esnum, raimrs_su, raimrs_cu))
+    raim_su, raim_cu = raim(True, esnum, ednum, 0.0)
+    # raimrs_su, raimrs_cu = raim_rs(True, esnum, ednum, 0.0)
+    print("[RAIM] sdnum:{} esnum:{} raim_su{} raim_cu{}".format(ednum, esnum, raim_su, raim_cu))
+    # print("[RAIM-RS] sdnum:{} esnum:{} raimrs_su{} raimrs_cu{}".format(ednum, esnum, raimrs_su, raimrs_cu))

@@ -49,10 +49,12 @@ pip install .
 Then execute the various Python files under [RAIM_experiment](python/examples/simulation/RAIM_experiment) to:<br/>
 ```bash
 examples:
+python exp1.py --cf selected_svhn.yaml
+python exp2.py --cf selected_svhn.yaml
+python exp3.py --cf selected_svhn.yaml
+python exp4.py --cf selected_svhn.yaml
 python raim_torch_hierarchicalfl_step_by_step_exp.py --cf selected_svhn.yaml
 python raim_rs_torch_hierarchicalfl_step_by_step_exp.py --cf selected_svhn.yaml
-python exp1.py --cf selected_svhn.yaml
-python workspace.py --cf selected_svhn.yaml
 ```
 程序会自动绘制图像，并且在控制台输出绘图坐标信息<br/>
 The program will automatically draw images and output drawing coordinate information on the console<br/>

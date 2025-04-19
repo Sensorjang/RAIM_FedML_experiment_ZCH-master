@@ -1,6 +1,7 @@
 from raim_torch_hierarchicalfl_step_by_step_exp import raim
 from raim_rs_torch_hierarchicalfl_step_by_step_exp import raim_rs
 import openpyxl
+import time
 import matplotlib.pyplot as plt
 
 excel_save_path = "D:\\"
@@ -35,7 +36,7 @@ fig4 = wb.create_sheet('Figure 4')
 fig4.append(['esnum', '[RAIM] cloudserver utility', '[RAIM-RS] cloudserver utility'])
 
 if __name__ == '__main__':
-    esnum = 20
+    esnum = 15
     for ednum in range(40, 101, 10): # ednum = 40,50,60,70,80,90,100
         raim_su, raim_cu = raim(True, esnum, ednum, 0.0)
         print("[RAIM] sdnum:{} esnum:{} raim_su{} raim_cu{}".format(ednum, esnum, raim_su, raim_cu))
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         fig3.append([i * 10 + 40, raim_cu_list_ib_ednum[i], raimrs_cu_list_ib_ednum[i]])
         fig4.append([i * 5 + 5, raim_cu_list_ib_esnum[i], raimrs_cu_list_ib_esnum[i]])
     
-    wb.save(excel_save_path + 'exp1.xlsx')
+    wb.save(excel_save_path + 'exp1'+ '_' + str(int(time.time())) + '.xlsx')
 
     # 创建一个包含四个子图的图形 绘制柱状图表并显示在屏幕上
     ednums = list(range(40, 101, 10))  # ednum的值
@@ -120,6 +121,7 @@ if __name__ == '__main__':
     axs[1, 0].set_title('Cloudserver Utility vs. ednum')
     axs[1, 0].legend()
     axs[1, 0].grid(True)
+    axs[1, 0].set_ylim(10, 11.5)
 
     # 第四个子图：随着esnum的增加，cu的值
     bar_width = 2  # 柱状图的宽度
@@ -134,9 +136,11 @@ if __name__ == '__main__':
     axs[1, 1].set_title('Cloudserver Utility vs. esnum')
     axs[1, 1].legend()
     axs[1, 1].grid(True)
+    axs[1, 1].set_ylim(10, 11.5)
 
     # 调整子图之间的间距
     plt.tight_layout()
-
+    plt.savefig(excel_save_path + 'exp1'+ '_' + str(int(time.time())) + '.png', dpi=300)
     # 显示图形
     plt.show()
+    time.sleep(1)

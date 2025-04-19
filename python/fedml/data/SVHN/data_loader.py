@@ -127,13 +127,14 @@ def load_partition_data_svhn(
 
         ############RAIM############
         # 获取当前客户端的声誉值
+        offset = -0.25
         if client_idx < len(args.reputations):
             client_reputation = args.reputations[client_idx]
         else:
-            client_reputation = -0.5  # 默认声誉值
+            client_reputation = 0.25  # 默认声誉值
         # 根据声誉值计算折扣因子
-        if client_reputation < 0:
-            discount_factor = 0.5 + (1 + client_reputation) * 0.5  # 当声誉为负时，折扣从 0.5 到 1.0
+        if client_reputation < 0.5:
+            discount_factor = 0.5 + client_reputation + offset # 当声誉为0~0.5时，折扣从 0.5 到 1.0 , + offset
         else:
             discount_factor = 1.0  # 当声誉为非负时，折扣为 1.0（即不打折）
         # 应用折扣并四舍五入为整数

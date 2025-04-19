@@ -36,7 +36,7 @@ def calculate_utilities(initial_rewards, training_costs, reputations):
         for j in sorted_edge_indices:
             # 公式38
             # 计算clusters[j]中每个设备的training_costs[i] / ( reputations[i] + 1e-6 )总和 sumvalue
-            sumvalue = sum((training_costs[i] / ( reputations[i] + 1e-6 )) for i in clusters[j])
+            sumvalue = 0 + sum((training_costs[i] / ( reputations[i] + 1e-6 )) for i in clusters[j])
             utilities[i][j] = initial_rewards[j] * (( 1 - (( len(clusters[j]) - 1 ) * training_costs[i] / ( reputations[i] + 1e-6 )) / (sumvalue + 1e-6)) ** 2 )
     
     # print("个体效用:" , str(utilities))
@@ -59,7 +59,7 @@ def calculate_participation_ratios(initial_rewards, clusters, training_costs, re
         for i in clusters[j]:
             # 公式19
             # 计算clusters[j]中每个设备的training_costs[i] / ( reputations[i] + 1e-6 )总和 sumvalue
-            sumvalue = sum(training_costs[i] / ( reputations[i] + 1e-6 ) for i in clusters[j])
+            sumvalue = 0 + sum(training_costs[i] / ( reputations[i] + 1e-6 ) for i in clusters[j])
             ratios[i][j] = ((len(clusters[j]) - 1 ) * initial_rewards[j] / ((datasize[i] * reputations[i] * (sumvalue ** 2)) + 1e-6)) * (sumvalue - (len(clusters[j]) - 1 ) * (training_costs[i] / ( reputations[i] + 1e-6 )))
     
     return ratios
@@ -119,13 +119,13 @@ def assign_edge_servers(initial_rewards, training_costs, reputations):
     # 计算每个设备的总效用
     eds_total_utility = 0
     for i in range(N):
-        value = ed_utilities[i][sorted_edge_indices[assigned_servers[i]]]
-        if value < -5: # 效用限制
-            value = -5
-        elif value > 5:
-            value = 5
+        value = ed_utilities[i][assigned_servers[i]]
+        if value < 0.0: # 效用限制
+            value = 0.0
+        elif value > 0.5:
+            value = 0.5
         eds_total_utility += value
-    
+    print("all的效用为：{}".format(eds_total_utility))
     # 步骤15-19: 计算每个设备的比率Aij
     participation_ratios = calculate_participation_ratios(initial_rewards, clusters, training_costs, reputations)
     
@@ -160,7 +160,7 @@ def calculate_es_rewards(firstprice, training_costs, reputations):
     global sorted_edge_indices , delta , theta, es_rewards, clusters, param_a
 
     for j in sorted_edge_indices:
-        sumvalue = sum(training_costs[i] / ( reputations[i] + 1e-6 ) for i in clusters[j])
+        sumvalue = 0 + sum(training_costs[i] / ( reputations[i] + 1e-6 ) for i in clusters[j])
         b = ( len(clusters[j]) - 1 ) / (sumvalue + 1e-6)
         es_rewards[j] = (theta[j] / math.log(param_a)) - (delta[j] / firstprice * b)
 
@@ -175,10 +175,10 @@ def calculate_es_utilities(reputations, commun_costs):
     es_utilities = [0] * M # 初始化ES效用矩阵
     
     for j in sorted_edge_indices:
-        sumvalue = sum((participation_ratios_rs[i][j] * datasize[i] * reputations[i]) for i in clusters[j])
+        sumvalue = sum(max(0, (participation_ratios_rs[i][j] * datasize[i] * reputations[i])) for i in clusters[j])
         # print("########DEBUG_INFO###### A:{} B:{} C:{}".format((math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)), es_rewards[j] / (theta[j]+ 1e-6), commun_costs[j] * len(clusters[j])))
-        es_utilities[j] = (math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)) - es_rewards[j] / (theta[j]+ 1e-6) - commun_costs[j] * len(clusters[j])
-
+        es_utilities[j] = ((math.log(firstprice * sumvalue + delta[j]) / math.log(param_a)) - es_rewards[j] / (theta[j]+ 1e-6) - commun_costs[j] * len(clusters[j]))
+        es_utilities[j] = 0 if es_utilities[j] < -10e5 else es_utilities[j]
     print("ES效用:" , es_utilities)
 
 def calculate_cs_price(training_costs, reputations):
@@ -188,7 +188,7 @@ def calculate_cs_price(training_costs, reputations):
     global delta, gama, param_a, sorted_edge_indices, theta, clusters
 
     sumdelta = sum(delta)
-    sumthetab = sum((theta[j] * ( len(clusters[j]) - 1 ) / ((sum( (training_costs[i] / (reputations[i] + 1e-6)) for i in clusters[j])) + 1e-6)) for j in sorted_edge_indices)
+    sumthetab = sum((theta[j] * ( len(clusters[j]) - 1 ) / ((sum( (training_costs[i] / (reputations[i] + 1e-6)) for i in clusters[j])) + 1e-6)) for j in sorted_edge_indices if clusters[j])
     price = (sumdelta + math.sqrt(sumdelta ** 2 + 4 * gama * sumdelta + 4 * gama * math.log(param_a) * sumdelta / sumthetab)) / ((2 * sumthetab / math.log(param_a)) + 2)
 
     print("CS最优报价:" , price)
@@ -201,7 +201,7 @@ def calculate_cs_utilities(finalprice):
     total_datasize = 0
     for j in sorted_edge_indices:
         total_datasize += sum(datasize[i] for i in clusters[j])
-    cs_utilities = gama * math.log(total_datasize + 1) - finalprice * total_datasize * 1e-5
+    cs_utilities = gama * math.log(total_datasize + 1) - finalprice * total_datasize * 1e-6
     # print("########DEBUG_INFO###### A:{} B:{} C:{}".format(gama * math.log(total_datasize + 1), finalprice * total_datasize, cs_utilities))
     
     print("CS效用:" , cs_utilities)
@@ -228,9 +228,9 @@ def generate_reputations(N, lowrepu_ratio):
     high_repu_count = N - low_repu_count
 
     # 生成低声誉的值
-    low_reputations = [random.uniform(-1, 0) for _ in range(low_repu_count)]
+    low_reputations = [max(random.uniform(0, 0.5), 0.00001) for _ in range(low_repu_count)]
     # 生成高声誉的值
-    high_reputations = [random.uniform(0, 1) for _ in range(high_repu_count)]
+    high_reputations = [min(random.uniform(0.5, 1), 0.99999) for _ in range(high_repu_count)]
 
     # 合并低声誉和高声誉的值
     reputations = low_reputations + high_reputations
@@ -293,7 +293,7 @@ def raim_rs(justsimulate, esnum = 0, ednum = 0, lowrepu_ratio = 0.0):
     cs_utilities = calculate_cs_utilities(finalprice)
 
     es_utilities = [max(min(i, 10), -10) for i in es_utilities] # 效用限制
-    cs_utilities = max(min(cs_utilities, 100), -100)
+    cs_utilities = max(min(cs_utilities, 20), -5)
     social_utility = cs_utilities + sum(es_utilities) + eds_total_utility
     print("社会效用:{}".format(social_utility))
 
@@ -310,7 +310,8 @@ def raim_rs(justsimulate, esnum = 0, ednum = 0, lowrepu_ratio = 0.0):
 
     # start training
     fedml_runner = FedMLRunner(args, device, dataset, model)
-    fedml_runner.run()
+    acc_list, loss_list = fedml_runner.run()
+    return acc_list, loss_list
 
 if __name__ == "__main__":
     raim_rs(False)
