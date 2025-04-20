@@ -3,7 +3,7 @@ common_args:
   random_seed: 0
 
 #  [Dataset + Model] :
-#  mnist  lr
+#  mnist  lr / cnn
 #  femnist  cnn
 #  cifar10  cnn_web
 #  svhn  cnn
@@ -15,7 +15,7 @@ data_args:
   partition_alpha: 0.5
 
 model_args:
-  model: "lr"
+  model: "cnn"
 
 train_args:
   federated_optimizer: "HierarchicalFL"

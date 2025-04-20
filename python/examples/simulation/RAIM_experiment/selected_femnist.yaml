@@ -3,7 +3,7 @@ common_args:
   random_seed: 0
 
 #  [Dataset + Model] :
-#  mnist  lr
+#  mnist  lr / cnn
 #  femnist  cnn
 #  cifar10  cnn_web
 #  svhn  cnn
