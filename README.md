@@ -16,11 +16,11 @@ RAIM_FedML_experiment_ZCH
 This experiment modified some algorithm logic and links of the [FedML framework](FedML_README.md), and added some new operators and components to achieve the details of the RAIM comparative experiment<br/>
 
 ## 实验涉及主要算子和组件信息
-- 涉及的算法：RAIM (ours), QAIM, MaxQ
+- 涉及的算法：RAIM (ours), RAIM-RS, QAIM, FLSG
 - 涉及的数据集：MNIST, FEMNIST, CIFAR10, SVHN
 - 涉及的模型：CNN
 <br/><br/>
-- Algorithms involved: RAIM (ours), QAIM, MaxQ
+- Algorithms involved: RAIM (ours), RAIM-RS, QAIM, FLSG
 - Datasets involved: MNIST, FEMNIST, CIFAR10, SVHN
 - Models involved: CNN
 <br/><br/>
