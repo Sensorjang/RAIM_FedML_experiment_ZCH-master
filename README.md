@@ -30,7 +30,7 @@ This experiment modified some algorithm logic and links of the [FedML framework]
   - CIFAR10: https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
   - SVHN: http://ufldl.stanford.edu/housenumbers/train_32x32.mat and http://ufldl.stanford.edu/housenumbers/test_32x32.mat
 
-## 实验涉及主要算子和组件信息
+## 实验结果
 - 实验结果数据路径：[exp_result](exp_result/)
 - Experimental result data path：[exp_result](exp_result/)
 
